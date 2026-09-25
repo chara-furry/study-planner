@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Planner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- The bar across the top: title and date, how much of today is done,
+       and the clock. It stays in view while the page scrolls. -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">📘</span>
+        <div>
+          <h1>Study Planner</h1>
+          <p id="clock-date" class="topbar-date"></p>
+        </div>
+      </div>
+      <div class="day-progress">
+        <p class="day-progress-text">
+          <span id="overview-label">Today</span>
+          <strong id="overview-count"></strong>
+        </p>
+        <div class="progress-track"><div id="overview-fill" class="progress-fill"></div></div>
+      </div>
+      <p class="topbar-clock">
+        <span id="clock-period"></span>
+        <span id="clock-time"></span>
+      </p>
+    </div>
+  </header>
+
+  <!-- Two columns on a wide screen: today's work on the left, everything
+       else on the right. On a narrow one, the right column goes underneath. -->
+  <main class="dashboard">
+    <!--
+      Each card is a <section class="card collapsible">. To add a card, copy
+      this block, give it a new id, and put your content in section-body:
+
+      <section id="my-section" class="card collapsible">
+        <div class="section-header">
+          <h2><span class="card-icon" aria-hidden="true">⭐</span>My Card</h2>
+          <span class="card-count" id="my-count"></span>   (optional, see overview.js)
+          <button class="collapse-toggle" aria-label="Collapse section">▾</button>
+        </div>
+        <div class="section-body">
+          ...
+        </div>
+      </section>
+
+      The class "card" gives it the white box, and "collapsible" makes the
+      header fold it up. Neither needs any extra CSS or JavaScript.
+    -->
+
+    <div class="column">
+      <section id="today-section" class="card collapsible">
+        <div class="section-header">
+          <h2><span class="card-icon" aria-hidden="true">🎬</span>Today's Videos</h2>
+          <span class="card-count" id="today-count"></span>
+          <button class="collapse-toggle" aria-label="Collapse section">▾</button>
+        </div>
+        <div class="section-body">
+          <p id="today-subtitle" class="muted"></p>
+          <ul id="today-list" class="rows"></ul>
+          <div id="today-actions" class="plan-actions"></div>
+          <p id="today-done-msg" class="done-message" hidden>🎉 All done for today — come back tomorrow!</p>
+        </div>
+      </section>
+
+      <section id="tomorrow-section" class="card collapsible">
+        <div class="section-header">
+          <h2><span class="card-icon" aria-hidden="true">🔭</span>Prepare for Tomorrow</h2>
+          <span class="card-count" id="tomorrow-count"></span>
+          <button class="collapse-toggle" aria-label="Collapse section">▾</button>
+        </div>
+        <div class="section-body">
+          <p id="tomorrow-subtitle" class="muted"></p>
+          <ul id="tomorrow-list" class="rows"></ul>
+          <div id="tomorrow-actions" class="plan-actions"></div>
+        </div>
+      </section>
+
+      <section id="daily-section" class="card collapsible">
+        <div class="section-header">
+          <h2><span class="card-icon" aria-hidden="true">✅</span>Daily Checklist</h2>
+          <span class="card-count" id="daily-count"></span>
+          <button class="collapse-toggle" aria-label="Collapse section">▾</button>
+        </div>
+        <div class="section-body">
+          <ul id="daily-list" class="rows"></ul>
+          <p id="daily-done-msg" class="done-message" hidden>✅ Daily checklist complete!</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="column">
+      <section id="result-section" class="card collapsible">
+        <div class="section-header">
+          <h2><span class="card-icon" aria-hidden="true">📄</span>Today's Result</h2>
+          <button class="collapse-toggle" aria-label="Collapse section">▾</button>
+        </div>
+        <div class="section-body">
+          <p id="result-summary" class="muted"></p>
+          <!-- aria-live makes screen readers announce it when the export unlocks -->
+          <p id="result-status" aria-live="polite"></p>
+          <div class="export-buttons">
+            <button id="export-btn" class="button" disabled>Export as PDF</button>
+            <button id="export-docx-btn" class="button" disabled>Export as Word (DOCX)</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="calendar-section" class="card collapsible">
+        <div class="section-header">
+          <h2><span class="card-icon" aria-hidden="true">📅</span>Calendar</h2>
+          <button class="collapse-toggle" aria-label="Collapse section">▾</button>
+        </div>
+        <div class="section-body">
+          <div class="cal-nav">
+            <button id="cal-prev" class="icon-button" aria-label="Previous month">‹</button>
+            <span id="cal-month"></span>
+            <button id="cal-next" class="icon-button" aria-label="Next month">›</button>
+          </div>
+          <div id="cal-weekdays" class="cal-weekdays"></div>
+          <div id="cal-grid" class="cal-grid"></div>
+          <div class="cal-legend">
+            <span><i class="dot dot-videos"></i>videos done</span>
+            <span><i class="dot dot-daily"></i>checklist done</span>
+            <span><i class="swatch-off"></i>day off</span>
+          </div>
+          <div id="cal-detail" hidden></div>
+        </div>
+      </section>
+
+      <section id="catalogs-section" class="card collapsible">
+        <div class="section-header">
+          <h2><span class="card-icon" aria-hidden="true">📚</span>Catalogs</h2>
+          <button class="collapse-toggle" aria-label="Collapse section">▾</button>
+        </div>
+        <div class="section-body">
+          <ul id="catalog-list" class="rows"></ul>
+          <div class="upload-row">
+            <input type="file" id="catalog-file" accept=".xlsx">
+            <button id="catalog-upload-btn" class="button">Add catalog</button>
+          </div>
+          <p id="catalog-status" class="muted" hidden></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!--
+    The order below matters. These are plain scripts (not modules) so the site
+    works when index.html is opened straight from disk, which means they all
+    share one global scope and a file can only use what loaded before it.
+  -->
+
+  <!-- Data and settings -->
+  <script src="catalogs.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/storage.js"></script>
+
+  <!-- Helpers and rules, used by the cards -->
+  <script src="js/dom.js"></script>
+  <script src="js/font.js"></script>
+  <script src="js/pdf.js"></script>
+  <script src="js/docx.js"></script>
+  <script src="js/xlsx.js"></script>
+  <script src="js/curriculum.js"></script>
+  <script src="js/plan.js"></script>
+  <script src="js/plan-list.js"></script>
+
+  <!-- One file per card. Add a new card's script here. -->
+  <script src="js/cards/clock.js"></script>
+  <script src="js/cards/daily.js"></script>
+  <script src="js/cards/today.js"></script>
+  <script src="js/cards/tomorrow.js"></script>
+  <script src="js/cards/result.js"></script>
+  <script src="js/cards/calendar.js"></script>
+  <script src="js/cards/catalogs.js"></script>
+  <script src="js/cards/overview.js"></script>
+
+  <!-- Starts everything. Must stay last. -->
+  <script src="js/app.js"></script>
+</body>
+</html>

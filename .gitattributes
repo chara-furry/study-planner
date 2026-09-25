@@ -1,0 +1,2 @@
+# Keep line endings the same everywhere, whichever computer edits the files.
+* text=auto eol=lf

@@ -1,0 +1,851 @@
+/*
+ * style.css — all of the site's styling.
+ *
+ * Laid out top to bottom as:
+ *   1. Colors       change the whole site's look here
+ *   2. Page layout
+ *   3. Building blocks you can reuse in a new card:
+ *        .card        the white box every card sits in
+ *        .rows        a list of rows with dividers (used by 4 of the cards)
+ *        .card-count  a "2/3" count in a card's title bar
+ *        .progress-track  a progress bar
+ *        .button      blue button; add "danger" for red, "secondary" for grey
+ *        .muted       smaller grey text
+ *   4. Styles that belong to one particular card
+ */
+
+/* ------------------------------------------------------------ 1. colors */
+
+:root {
+  --page-background: #f0f2f5;
+  --card-background: #fff;
+  --shadow: rgba(0, 0, 0, 0.08);
+
+  --text: #1c1e21;
+  --text-muted: #65676b;   /* secondary text: topics, counts, captions */
+  --text-faint: #b0b3b8;   /* days in the future */
+
+  --line: #e4e6eb;         /* dividers, progress-bar track */
+  --gray-button: #e4e6eb;
+  --gray-button-hover: #d8dadf;
+
+  --accent: #1877f2;       /* blue: buttons, progress, "today" */
+  --accent-hover: #166fe5;
+  --accent-soft: #e7f3ff;  /* light blue behind blue text */
+  --accent-pale: #cfe3ff;  /* blue that shows up on a blue background */
+
+  --success: #31a24c;      /* green: "all done" messages */
+  --success-pale: #b6e6c3; /* green that shows up on a blue background */
+
+  --off: #e3f4e6;          /* pale green: days off on the calendar */
+  --off-hover: #d3ecd8;
+
+  --danger: #d93025;       /* red: delete */
+  --danger-soft: #ffebe9;
+  --danger-soft-hover: #ffdcd9;
+}
+
+/* ------------------------------------------------------- 2. page layout */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--page-background);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* The bar across the top: title and date, today's progress, the clock. It
+   stays at the top of the window while the page scrolls. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--card-background);
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.topbar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.8rem 1.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.brand-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.brand h1 {
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.topbar-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* "Done today 4 of 12" over a bar; it takes the room between the two ends. */
+.day-progress {
+  flex: 1 1 14rem;
+  max-width: 26rem;
+  margin-left: auto;
+}
+
+.day-progress-text {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.day-progress-text strong {
+  color: var(--text);
+}
+
+.day-progress .progress-track {
+  height: 8px;
+  margin-top: 0;
+}
+
+.topbar-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-variant-numeric: tabular-nums; /* digits all the same width, so no jitter */
+}
+
+#clock-period {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+#clock-time {
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* On a phone: title and clock on one line, the progress bar under them. */
+@media (max-width: 640px) {
+  .topbar-inner {
+    padding: 0.7rem 1rem;
+    gap: 0.6rem 1rem;
+  }
+
+  .day-progress {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .topbar-clock {
+    margin-left: auto;
+  }
+}
+
+/* The cards: two columns side by side on a wide screen (today's work gets
+   the wider one), one under the other on a narrower one. */
+.dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+@media (max-width: 960px) {
+  .dashboard {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 720px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard,
+  .column {
+    gap: 1rem;
+  }
+
+  .dashboard {
+    padding: 1rem;
+  }
+}
+
+/* The "hidden" attribute must always win over display rules below. */
+[hidden] {
+  display: none !important;
+}
+
+/* ------------------------------------------------- 3. building blocks */
+
+/* The white box around each card. */
+.card {
+  padding: 1.25rem 1.5rem;
+  background: var(--card-background);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 1rem 1.1rem;
+  }
+}
+
+/* A card's title bar: icon and title, an optional count ("2/3"), and the
+   fold arrow. Clicking anywhere on it folds the card up (see app.js). */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: -0.35rem -0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.section-header:hover {
+  background: var(--page-background);
+}
+
+.card h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-right: auto;
+  font-size: 1.1rem;
+}
+
+.card-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* How much of a card's list is done, like "2/3"; green once it's all done. */
+.card-count {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--page-background);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-count:empty {
+  display: none;
+}
+
+.card-count.complete {
+  background: var(--success);
+  color: #fff;
+}
+
+.section-body {
+  margin-top: 0.75rem;
+}
+
+/* Small square buttons: the fold arrow in a card's title bar (plain until
+   the bar is pointed at, since the whole bar is clickable), and the grey
+   ones like the calendar's ‹ › */
+.collapse-toggle,
+.icon-button {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--gray-button);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.collapse-toggle {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.icon-button:hover,
+.section-header:hover .collapse-toggle {
+  background: var(--gray-button-hover);
+}
+
+/* Text buttons. <button class="button"> is blue; add "danger" for red, "secondary" for grey. */
+.button {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--accent-hover);
+}
+
+.button.danger {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.button.danger:hover {
+  background: var(--danger-soft-hover);
+}
+
+.button.secondary {
+  background: var(--gray-button);
+  color: var(--text);
+}
+
+.button.secondary:hover {
+  background: var(--gray-button-hover);
+}
+
+/* A button that can't be used yet, like the export before today is done. */
+.button:disabled,
+.button:disabled:hover {
+  background: var(--gray-button);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.muted {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* A message that appears once everything in a card is done. */
+.done-message {
+  margin-top: 1rem;
+  font-weight: 600;
+  color: var(--success);
+}
+
+/*
+ * A progress bar, used by the top bar and by each catalog's row:
+ *
+ *   <div class="progress-track"><div class="progress-fill"></div></div>
+ *
+ * The fill's width is set from JavaScript; "complete" turns it green.
+ */
+.progress-track {
+  height: 6px;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.progress-fill.complete {
+  background: var(--success);
+}
+
+/*
+ * .rows — a list where each row lays out left to right, split by thin lines.
+ *
+ *   <ul class="rows">
+ *     <li class="done">                       "done" strikes the title through
+ *       <input type="checkbox">
+ *       <div class="row-text">                takes up the spare width
+ *         <div class="row-title">Title</div>
+ *         <div class="row-subtitle">Smaller grey line</div>
+ *       </div>
+ *       ...anything else, e.g. a badge or button
+ *     </li>
+ *   </ul>
+ */
+.rows {
+  list-style: none;
+  margin-top: 0.75rem;
+}
+
+.rows > li {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.5rem;
+}
+
+.rows > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.rows input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+
+/* A box that ticks itself, like Sofatutor in the checklist. */
+.rows input[type="checkbox"]:disabled {
+  cursor: default;
+}
+
+.row-text {
+  flex: 1;
+  min-width: 0; /* lets long titles wrap instead of pushing the row wider */
+}
+
+.row-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.row-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.rows > li.done .row-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* ----------------------------------------------- 4. card-specific styles */
+
+/* Daily Checklist card: three text boxes under some items' names, each with
+   its own score box, in three equal columns lined up with the name. On a
+   phone they stack, one box per line. */
+
+.rows > li.task-with-details {
+  flex-wrap: wrap;
+  row-gap: 0.45rem;
+}
+
+.task-details {
+  flex-basis: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  padding-left: 2.1rem; /* the checkbox's width plus the gap after it */
+}
+
+.task-pair {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.task-pair .score input,
+.minutes input {
+  width: 2.9rem;
+  -moz-appearance: textfield; /* no up/down arrows: they'd take up room */
+}
+
+.task-pair .score input::-webkit-inner-spin-button,
+.task-pair .score input::-webkit-outer-spin-button,
+.minutes input::-webkit-inner-spin-button,
+.minutes input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Membean: the minutes box sits right after the item's name. */
+.task-with-minutes .row-text {
+  flex: 0 0 auto;
+}
+
+.task-field {
+  flex: 1;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  /* Text too long for the box ends in "…" (the whole text shows on hover). */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@media (max-width: 560px) {
+  .task-details {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+}
+
+/* Like the score box: empty required boxes stand out until filled in. */
+.task-field:placeholder-shown {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Today's Videos card: the subject pill at the end of each row */
+
+.subject-badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.subject-badge.fill-in {
+  background: var(--page-background);
+  color: var(--text-muted);
+}
+
+/* The end of each video row: the score box once ticked, the ✎ until then.
+   A fixed width keeps them in one column whatever the badge's width. */
+.row-end {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  width: 5rem;
+}
+
+/* On a phone, the badge and score move under the title so it has room. */
+@media (max-width: 480px) {
+  .rows > li:has(.subject-badge) {
+    flex-wrap: wrap;
+  }
+
+  .rows > li:has(.subject-badge) .row-text {
+    flex-basis: calc(100% - 2.2rem);
+  }
+
+  .rows > li:has(.subject-badge) .subject-badge {
+    margin-left: 2.1rem;
+  }
+
+  .rows > li:has(.subject-badge) .row-end {
+    width: auto;
+    margin-left: auto;
+  }
+}
+
+/* The score box on a ticked video (see plan-list.js) */
+
+.score {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.score input {
+  width: 3.6rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  text-align: right;
+}
+
+/* An empty score box stands out until it's filled in. */
+.score input:placeholder-shown {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Today's Videos and Prepare for Tomorrow cards: the buttons under the list */
+
+.plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+/* The row that turns into a form when ✎ is clicked (see plan-list.js) */
+
+.rows > li.plan-form {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  background: var(--page-background);
+  border-radius: 8px;
+}
+
+.plan-form select {
+  flex: 1 1 14rem;
+  min-width: 0; /* lets long video titles shrink instead of widening the card */
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card-background);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.plan-form-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* One size for every button under a list and in the form, whatever its color. */
+.plan-actions .button,
+.plan-form .button {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+}
+
+/* Today's Result card */
+
+/* The two export buttons, side by side (stacked on a narrow screen). */
+.export-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+#result-status {
+  margin: 0.4rem 0 0.9rem;
+}
+
+/* Catalogs card */
+
+.source-tag {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* "2 weeks ahead of the class · You: Herz · Class: Atmung" */
+.class-comparison {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.class-comparison.ahead {
+  color: var(--success);
+}
+
+.class-comparison.behind {
+  color: var(--danger);
+}
+
+.catalog-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.upload-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Calendar card */
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.cal-nav .icon-button {
+  font-size: 1.1rem;
+}
+
+.cal-weekdays,
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* seven columns, Sunday to Saturday */
+  gap: 4px;
+}
+
+.cal-weekdays {
+  margin-bottom: 4px;
+}
+
+.cal-weekdays span {
+  padding: 0.25rem 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.cal-day {
+  aspect-ratio: 1; /* square cells */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.2rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--page-background);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cal-day:hover {
+  background: var(--line);
+}
+
+.cal-day.blank {
+  background: transparent;
+  cursor: default;
+}
+
+.cal-day.off {
+  background: var(--off);
+}
+
+.cal-day.off:hover {
+  background: var(--off-hover);
+}
+
+.cal-day.today {
+  outline: 2px solid var(--accent);
+  font-weight: 700;
+}
+
+.cal-day.selected {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cal-day.future {
+  color: var(--text-faint);
+}
+
+.cal-dots {
+  display: flex;
+  gap: 3px;
+  height: 6px; /* keeps day numbers level whether or not a day has dots */
+}
+
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot-videos { background: var(--accent); }
+.dot-daily { background: var(--success); }
+
+/* On the blue "selected" day, use paler dots so they stay visible. */
+.cal-day.selected .dot-videos { background: var(--accent-pale); }
+.cal-day.selected .dot-daily { background: var(--success-pale); }
+
+.cal-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.cal-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.swatch-off {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--off);
+  outline: 1px solid var(--off-hover);
+}
+
+.cal-day-type {
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+#cal-detail {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+#cal-detail h3 {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+#cal-detail ul {
+  list-style: none;
+}
+
+#cal-detail li {
+  padding: 0.2rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.cal-detail-title {
+  color: var(--text);
+}
+
+#cal-detail li.done .cal-detail-title {
+  text-decoration: line-through;
+}
