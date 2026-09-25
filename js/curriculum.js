@@ -149,6 +149,17 @@ function topicName(catalog, topicOf, videoIndex) {
 }
 
 /**
+ * The curriculum videos the class is taken to have covered by the end of the
+ * given day, as video positions in study order. Rounded up, so someone who
+ * has watched them all counts as level with the class rather than a video
+ * behind it.
+ */
+function videosCoveredByClass(catalog, dateStr) {
+  const { curriculum } = studyPlan(catalog);
+  return curriculum.slice(0, Math.ceil(shareOfSchoolYearPassed(dateStr) * curriculum.length));
+}
+
+/**
  * The share (0 to 1) of the school year's business days that have passed by
  * the end of the given day.
  */

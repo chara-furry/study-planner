@@ -76,6 +76,20 @@ const DAYS_OFF = [
 const SCHOOL_YEAR = { from: "2026-09-07", to: "2027-07-14" };
 
 /**
+ * Whether a browser opening the planner for the first time starts level with
+ * the class instead of at the first video of the year: every curriculum video
+ * the class is estimated to have covered by today (see curriculum.js) counts
+ * as watched straight away.
+ *
+ * That's what makes the planner usable partway through the year, and on a new
+ * computer or phone, without a school year of videos to catch up on first.
+ * Set it to false to start from zero and work through everything.
+ *
+ * It only ever happens once, on a browser where nothing has been ticked yet.
+ */
+const START_CAUGHT_UP = true;
+
+/**
  * The Klasse 8 curriculum, from "Themenübersicht - Klasse 8", in the order its
  * topics are listed there, which is taken to be the order they're taught.
  *

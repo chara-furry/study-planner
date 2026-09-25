@@ -124,6 +124,11 @@ function getWatched(catalogId) {
   return new Set(progress[catalogId]?.done || []);
 }
 
+/** True once anything has been marked watched in this browser. */
+function hasSavedProgress() {
+  return Object.keys(loadJSON("progress", {})).length > 0;
+}
+
 /** Marks one video as watched (true) or not watched (false). */
 function setWatched(catalogId, videoIndex, watched) {
   const progress = loadJSON("progress", {});
@@ -131,6 +136,17 @@ function setWatched(catalogId, videoIndex, watched) {
 
   if (watched) indexes.add(videoIndex);
   else indexes.delete(videoIndex);
+
+  progress[catalogId] = { done: [...indexes] };
+  saveJSON("progress", progress);
+}
+
+/** Marks several of one catalog's videos as watched, in a single save. */
+function addWatched(catalogId, videoIndexes) {
+  const progress = loadJSON("progress", {});
+  const indexes = new Set(progress[catalogId]?.done || []);
+
+  for (const videoIndex of videoIndexes) indexes.add(videoIndex);
 
   progress[catalogId] = { done: [...indexes] };
   saveJSON("progress", progress);

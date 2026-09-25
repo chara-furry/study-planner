@@ -127,6 +127,12 @@ under `sections`, or exact video titles under `videos`. If a name doesn't match
 anything, the browser console (F12) says so. For Klasse 9, replace the topics
 and update `SCHOOL_YEAR` along with `DAYS_OFF`.
 
+`START_CAUGHT_UP` makes a browser opening the planner for the first time start
+level with the class: the curriculum videos the class has already covered by
+today count as watched. That's what lets you start partway through the year, or
+on a new phone, without a school year of videos to work through first. Set it to
+`false` to start from the very first video instead.
+
 `MAX_CATCH_UP_VIDEOS` caps how many extra videos a day gets while a subject is
 behind the class. Where the class is, is an estimate: it assumes each subject's
 curriculum is spread evenly over the school year's business days (weekdays in

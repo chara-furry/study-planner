@@ -70,6 +70,28 @@ setInterval(() => {
   }
 }, 1000);
 
+// ------------------------------------------------- starting level with the class
+//
+// A browser that has never run the planner would otherwise start at the first
+// video of the year, a whole school year behind the class, and spend weeks
+// catching up. START_CAUGHT_UP (config.js) counts the curriculum videos the
+// class has already covered as watched, once, so the planner carries on from
+// where school is.
+
+async function catchUpWithClassOnFirstRun() {
+  if (!START_CAUGHT_UP || hasSavedProgress()) return;
+
+  for (const catalog of await getAllCatalogs()) {
+    addWatched(catalog.id, videosCoveredByClass(catalog, todayStr()));
+  }
+
+  // Today may already have been given videos picked from no progress at all.
+  // Nothing can have been ticked off them (ticking is progress, and there is
+  // none), so they're worked out again from where the class is instead.
+  deleteDayPlan(todayStr(), "today");
+  deleteDayPlan(todayStr(), "prep");
+}
+
 // ----------------------------------------------------------------- start
 
-refreshAll();
+catchUpWithClassOnFirstRun().then(refreshAll);
