@@ -70,7 +70,7 @@ setInterval(() => {
   }
 }, 1000);
 
-// ------------------------------------------------- starting level with the class
+// ----------------------------------------- starting level with the class
 //
 // A browser that has never run the planner would otherwise start at the first
 // video of the year, a whole school year behind the class, and spend weeks
