@@ -12,15 +12,22 @@ topic, and the planner keeps you ahead of the class: it estimates where the
 class is in each subject and adds catch-up videos while you're behind. The
 Catalogs card shows how many weeks ahead you are.
 
-It runs entirely in the browser: no server, no build step, no libraries, no
-accounts. Progress is saved in the browser it was entered in and doesn't follow
-you to another browser or computer.
+The site is online at **https://chara-furry.github.io/study-planner/**. It runs
+entirely in the browser: no server, no build step, no libraries, no accounts.
+Progress is saved in the browser it was entered in and doesn't follow you to
+another browser or computer. The site being public doesn't make your progress
+public — there's nowhere for it to go; anyone else who opens the link gets their
+own empty copy.
 
 ---
 
 ## Running it
 
-**To use it:** open `index.html` in a browser.
+**To use it:** open https://chara-furry.github.io/study-planner/.
+
+Opening `index.html` from a copy of this folder works just as well, and works
+with no internet at all. The two are separate planners, though: each browser
+address keeps its own progress, so pick one and stay with it.
 
 **While editing the code:** run the included server, which stops the browser
 from caching old copies of your files:
@@ -30,6 +37,36 @@ python tools/serve.py
 ```
 
 then open http://localhost:8765. After saving a change, just refresh the page.
+
+---
+
+## Publishing changes
+
+The live site is this folder, served by GitHub Pages from the `main` branch of
+https://github.com/chara-furry/study-planner. There's nothing to build, so
+pushing is publishing:
+
+```
+git add -A
+git commit -m "What changed"
+git push
+```
+
+GitHub rebuilds the page a minute or so later.
+
+**The live page can keep showing the old version for about ten minutes after a
+push**, because GitHub tells browsers to cache the files for that long. Ctrl+F5
+forces fresh copies. Until then a page may also end up with some old files and
+some new ones, which can leave a card blank; the same Ctrl+F5 fixes it.
+
+Two files in the folder exist only for the hosted copy. `.nojekyll` tells GitHub
+to serve the files exactly as they are, rather than running them through its
+blog generator first. `.gitattributes` keeps line endings the same whichever
+computer edits the files.
+
+The repository is public, so don't put anything private in it. Nothing entered
+on the site is stored there — progress stays in the browser and is never
+uploaded.
 
 ---
 
@@ -302,7 +339,11 @@ For a one-off catalog, the upload button on the site works too.
 ## When something goes wrong
 
 **My change doesn't show up.** The browser is probably running a cached copy.
-Use `python tools/serve.py`, or press Ctrl+F5 to force a full reload.
+Use `python tools/serve.py`, or press Ctrl+F5 to force a full reload. On the
+hosted site, give it a minute after the push and then Ctrl+F5 there too.
+
+**I changed something locally and the hosted site is the same as before.** They
+are separate copies: the hosted one only changes when you `git push`.
 
 **A card is blank, or nothing happens.** Press F12 and look at the Console tab.
 The error message names the file and line.
