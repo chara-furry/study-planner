@@ -39,6 +39,11 @@
  *     config.js).
  *     { "2026-09-10": { "Membean": 15 }, ... }
  *
+ *   localStorage "caughtUp"
+ *     "1" once this browser has counted the videos the class has already
+ *     covered as watched (see START_CAUGHT_UP in config.js). It keeps that
+ *     from happening a second time.
+ *
  *   localStorage "collapsed:<card id>"
  *     "1" if that card is collapsed, "0" if open.
  *
@@ -124,9 +129,14 @@ function getWatched(catalogId) {
   return new Set(progress[catalogId]?.done || []);
 }
 
-/** True once anything has been marked watched in this browser. */
-function hasSavedProgress() {
-  return Object.keys(loadJSON("progress", {})).length > 0;
+/** True once this browser has been caught up with the class (see app.js). */
+function isCaughtUpWithClass() {
+  return localStorage.getItem("caughtUp") === "1";
+}
+
+/** Remembers that it has, so it only ever happens once. */
+function rememberCaughtUpWithClass() {
+  localStorage.setItem("caughtUp", "1");
 }
 
 /** Marks one video as watched (true) or not watched (false). */

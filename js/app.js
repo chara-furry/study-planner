@@ -72,26 +72,34 @@ setInterval(() => {
 
 // ----------------------------------------- starting level with the class
 //
-// A browser that has never run the planner would otherwise start at the first
-// video of the year, a whole school year behind the class, and spend weeks
-// catching up. START_CAUGHT_UP (config.js) counts the curriculum videos the
-// class has already covered as watched, once, so the planner carries on from
-// where school is.
+// A browser that starts at the first video of the year is a whole school year
+// behind the class, and would spend weeks catching up. START_CAUGHT_UP
+// (config.js) counts the curriculum videos the class has already covered as
+// watched, so the planner carries on from where school is.
+//
+// This happens once per browser, remembered under "caughtUp", whether or not
+// anything has been watched here already: a browser that was opened before
+// gets caught up the next time it loads. Videos are only ever added, so
+// watching something early is never undone.
 
-async function catchUpWithClassOnFirstRun() {
-  if (!START_CAUGHT_UP || hasSavedProgress()) return;
+async function catchUpWithClassOnce() {
+  if (!START_CAUGHT_UP || isCaughtUpWithClass()) return;
+  rememberCaughtUpWithClass();
 
   for (const catalog of await getAllCatalogs()) {
     addWatched(catalog.id, videosCoveredByClass(catalog, todayStr()));
   }
 
-  // Today may already have been given videos picked from no progress at all.
-  // Nothing can have been ticked off them (ticking is progress, and there is
-  // none), so they're worked out again from where the class is instead.
-  deleteDayPlan(todayStr(), "today");
-  deleteDayPlan(todayStr(), "prep");
+  // Today's videos may already have been picked from further back. They're
+  // worked out again, unless the day is under way: a list with something
+  // ticked or scored on it is the record of what was actually watched.
+  for (const list of ["today", "prep"]) {
+    const plan = getDayPlan(todayStr(), list) || [];
+    const untouched = plan.every((entry) => !entry.done && entry.score === null);
+    if (untouched) deleteDayPlan(todayStr(), list);
+  }
 }
 
 // ----------------------------------------------------------------- start
 
-catchUpWithClassOnFirstRun().then(refreshAll);
+catchUpWithClassOnce().then(refreshAll);
