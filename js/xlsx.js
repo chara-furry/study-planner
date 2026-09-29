@@ -211,8 +211,9 @@ async function parseCatalogXlsx(file) {
 
   // "Mathematik Klasse 8 Katalog" -> label "Mathematik Klasse 8",
   // subject "Mathematik", which is what SCHEDULE matches against.
+  // A sheet named just "Katalog" leaves nothing behind, so it falls back too.
   const sheetName = workbookXml ? readSheetName(workbookXml) : "";
-  const label = (sheetName || "Uploaded catalog").replace(/\s*Katalog\s*$/i, "").trim();
+  const label = sheetName.replace(/\s*Katalog\s*$/i, "").trim() || "Uploaded catalog";
   const subject = label.split(/\s+/)[0];
 
   const videos = [];

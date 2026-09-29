@@ -171,9 +171,15 @@ const LIST_KEYS = { today: "assignments", prep: "prep" };
 /**
  * Returns one of a day's lists of Entries, or null if it hasn't been worked
  * out yet. `list` is "today" or "prep".
+ *
+ * Anything saved in the list that isn't an Entry is left out. Every card draws
+ * from these lists, so one bad value would otherwise stop the whole page from
+ * being drawn, on this day and every day after it.
  */
 function getDayPlan(dateStr, list) {
-  return loadJSON(LIST_KEYS[list], {})[dateStr] || null;
+  const entries = loadJSON(LIST_KEYS[list], {})[dateStr];
+  if (!Array.isArray(entries)) return null;
+  return entries.filter((entry) => entry && typeof entry.catalogId === "string");
 }
 
 function saveDayPlan(dateStr, list, entries) {
@@ -288,9 +294,21 @@ async function getAllCatalogs() {
   return [...window.BUILTIN_CATALOGS, ...(await getUploadedCatalogs())];
 }
 
+/**
+ * The uploaded catalogs, or none at all when IndexedDB can't be used: it is
+ * turned off in some browsers' private windows, and when the page is opened
+ * straight from a file instead of through a server. The built-in catalogs
+ * work either way, so the site carries on without the uploaded ones rather
+ * than failing to draw anything at all.
+ */
 async function getUploadedCatalogs() {
-  const store = await openCatalogStore("readonly");
-  return waitFor(store.getAll());
+  try {
+    const store = await openCatalogStore("readonly");
+    return await waitFor(store.getAll());
+  } catch (error) {
+    console.warn("Uploaded catalogs are unavailable in this browser:", error);
+    return [];
+  }
 }
 
 async function saveUploadedCatalog(catalog) {
@@ -314,7 +332,10 @@ function openCatalogStore(mode) {
     const request = indexedDB.open("planner", 2);
 
     request.onupgradeneeded = () => {
-      request.result.createObjectStore("catalogs", { keyPath: "id" });
+      const db = request.result;
+      if (!db.objectStoreNames.contains("catalogs")) {
+        db.createObjectStore("catalogs", { keyPath: "id" });
+      }
     };
 
     request.onsuccess = () => {

@@ -49,7 +49,12 @@ function buildCatalogRow(catalog) {
           className: "button danger",
           textContent: "Delete",
           onclick: async () => {
-            await deleteUploadedCatalog(catalog.id);
+            try {
+              await deleteUploadedCatalog(catalog.id);
+            } catch (error) {
+              showCatalogStatus(`Could not delete "${catalog.label}": ${error.message}`);
+              return;
+            }
             showCatalogStatus(`Deleted "${catalog.label}".`);
             refreshAll();
           },
@@ -114,13 +119,20 @@ async function uploadCatalog() {
   const replaced = (await getUploadedCatalogs()).find((catalog) => catalog.id === id);
   if (replaced) moveSavedVideos(id, newPositionsOf(replaced.videos, parsed.videos));
 
-  await saveUploadedCatalog({
-    id,
-    subject: parsed.subject,
-    label: parsed.label,
-    source: "uploaded",
-    videos: parsed.videos,
-  });
+  try {
+    await saveUploadedCatalog({
+      id,
+      subject: parsed.subject,
+      label: parsed.label,
+      source: "uploaded",
+      videos: parsed.videos,
+    });
+  } catch (error) {
+    // The browser wouldn't store it: no room left, or a private window with
+    // IndexedDB turned off.
+    showCatalogStatus("Could not save that catalog: " + error.message);
+    return;
+  }
 
   catalogFileInput.value = "";
   showCatalogStatus(`Added "${parsed.label}" (${parsed.videos.length} videos).`);

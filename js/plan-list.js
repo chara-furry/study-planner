@@ -2,8 +2,8 @@
  * plan-list.js — a list of videos, shared by the Today's Videos and Prepare
  * for Tomorrow cards.
  *
- *   buildPlanRows(list, plan, catalogs)   rows for a <ul class="rows">
- *   buildPlanActions(list, plan)          the buttons under the list
+ *   buildPlanRows(list, plan, catalogs)      rows for a <ul class="rows">
+ *   buildPlanActions(list, plan, catalogs)   the buttons under the list
  *
  * `list` is "today" or "prep" (see plan.js). Every video has a checkbox. Once
  * ticked, a box appears for the score you got on it. Until then it has a ✎
@@ -33,13 +33,19 @@ async function openFormFor(list, slot) {
   document.getElementById("plan-form-subject")?.focus();
 }
 
-/** Closes the form and puts the cursor back on the button that opened it. */
+/**
+ * Closes the form and puts the cursor back on the button that opened it, or
+ * on "+ Add a video" when that button has gone with the row it belonged to
+ * (after Remove, say), so the cursor never drops off the page.
+ */
 async function closeForm() {
   if (!openForm) return; // already closed, e.g. by a double click
   const { list, slot } = openForm;
   openForm = null;
   await refreshAll();
-  document.getElementById(slot === -1 ? `add-${list}` : `edit-${list}-${slot}`)?.focus();
+
+  const opener = slot === -1 ? null : document.getElementById(`edit-${list}-${slot}`);
+  (opener || document.getElementById(`add-${list}`))?.focus();
 }
 
 /** One <li> per video in the list, plus the "Add a video" form when it's open. */
@@ -61,7 +67,7 @@ function buildPlanRows(list, plan, catalogs) {
 }
 
 /** "+ Add a video", and "Reset" once the list has been changed by hand. */
-function buildPlanActions(list, plan) {
+function buildPlanActions(list, plan, catalogs) {
   const buttons = [];
 
   if (!isFormOpen(list, -1)) {
@@ -73,7 +79,7 @@ function buildPlanActions(list, plan) {
     }));
   }
 
-  if (canResetList(list, plan)) {
+  if (canResetList(list, plan, catalogs)) {
     buttons.push(el("button", {
       className: "button secondary",
       textContent: "Reset to automatic",

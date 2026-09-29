@@ -355,6 +355,12 @@ are separate copies: the hosted one only changes when you `git push`.
 **A card is blank, or nothing happens.** Press F12 and look at the Console tab.
 The error message names the file and line.
 
+**My uploaded catalogs are gone.** Uploads live in IndexedDB, which some
+browsers switch off in a private window and for pages opened straight from a
+file. The planner then runs on the built-in catalogs alone and says so in the
+console. Run `python tools/serve.py` (or use the hosted site) and they come
+back — nothing was deleted.
+
 **"… is not defined".** Either a name is misspelled, or a script is loading
 before the one it depends on. Check the order of the `<script>` tags at the
 bottom of `index.html`: data, then helpers, then cards, then `app.js` last.

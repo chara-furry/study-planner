@@ -31,5 +31,5 @@ async function renderTomorrowCard() {
   }
 
   tomorrowList.replaceChildren(...buildPlanRows("prep", plan, catalogs));
-  tomorrowActions.replaceChildren(...buildPlanActions("prep", plan));
+  tomorrowActions.replaceChildren(...buildPlanActions("prep", plan, catalogs));
 }

@@ -24,7 +24,7 @@ async function renderTodayCard() {
       (catchUps > 0 ? ` · +${catchUps} to catch up with the class` : "");
 
   todayList.replaceChildren(...buildPlanRows("today", plan, catalogs));
-  todayActions.replaceChildren(...buildPlanActions("today", plan));
+  todayActions.replaceChildren(...buildPlanActions("today", plan, catalogs));
 
   const allDone = plan.length > 0 && plan.every((entry) => entry.done);
   todayDoneMessage.hidden = !allDone;

@@ -49,12 +49,16 @@ async function getTodayList(list) {
   // "prep" must be picked after "today", so it can skip today's videos.
   if (list === "prep") await getTodayList("today");
 
-  const entries = list === "today"
-    ? pickVideosForDay(strToDate(todayStr()), catalogs)
-    : pickPrepVideos(catalogs);
-
+  const entries = freshPickFor(list, catalogs);
   saveDayPlan(todayStr(), list, entries);
   return entries;
+}
+
+/** What one of today's lists would hold if it were worked out again now. */
+function freshPickFor(list, catalogs) {
+  return list === "today"
+    ? pickVideosForDay(strToDate(todayStr()), catalogs)
+    : pickPrepVideos(catalogs);
 }
 
 /**
@@ -279,9 +283,16 @@ function setScore(list, slot, score) {
   saveDayPlan(todayStr(), list, plan);
 }
 
-/** Puts a different video in one slot. */
+/**
+ * Puts a different video in one slot. The slot can be gone by the time the ✎
+ * form is saved, if the list got shorter while it was open (a catalog was
+ * deleted, say, or the day rolled over at midnight). Writing past the end of
+ * the list would leave a hole in it, so nothing is saved in that case.
+ */
 async function changeVideo(list, slot, catalogId, videoIndex) {
   const plan = await getTodayList(list);
+  if (!plan[slot]) return;
+
   plan[slot] = { catalogId, videoIndex, done: false, scheduled: false, custom: true, catchUp: false, score: null };
   saveDayPlan(todayStr(), list, plan);
 }
@@ -338,7 +349,7 @@ function resetList(list) {
  * is when the "Reset" button is offered. (Once something is ticked, resetting
  * would rewrite what you actually did.)
  */
-function canResetList(list, plan) {
+function canResetList(list, plan, catalogs) {
   const usualLength = list === "today"
     ? dayType(strToDate(todayStr())).videos
     : dayType(strToDate(tomorrowStr())).lessons.length;
@@ -346,5 +357,10 @@ function canResetList(list, plan) {
   // Catch-up videos come and go with progress, so they aren't counted.
   const automatic = plan.filter((entry) => !entry.custom && !entry.catchUp).length;
   const changed = plan.some((entry) => entry.custom) || automatic !== usualLength;
-  return changed && !plan.some((entry) => entry.done);
+  if (!changed || plan.some((entry) => entry.done)) return false;
+
+  // An empty list is only worth resetting if there is something to put in it.
+  // Once every catalog is finished there isn't, and the button would do
+  // nothing at all.
+  return plan.length > 0 || freshPickFor(list, catalogs).length > 0;
 }
