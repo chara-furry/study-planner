@@ -9,7 +9,8 @@
 <body>
 
   <!-- The bar across the top: title and date, how much of today is done,
-       and the clock. It stays in view while the page scrolls. -->
+       the clock, and the Catch up button. It stays in view while the page
+       scrolls. -->
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
@@ -30,6 +31,11 @@
         <span id="clock-period"></span>
         <span id="clock-time"></span>
       </p>
+      <button id="catch-up-btn" class="button secondary topbar-button"
+              aria-label="Catch up with the class"
+              title="Count every video the class has already covered as watched">
+        Catch up
+      </button>
     </div>
   </header>
 

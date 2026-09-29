@@ -171,6 +171,12 @@ videos to work through first. It happens once in each browser, and only ever
 adds videos, so anything you've watched ahead of the class stays as it is. Set
 it to `false` to start from the very first video instead.
 
+The **Catch up** button at the right-hand end of the bar at the top does the
+same thing whenever you press it, for when a few days get skipped and the
+catch-up videos pile up. It asks first, and a day you've already started keeps
+the videos it was given. Both it and the automatic run are
+`catchUpWithClass()` in `js/app.js`.
+
 `MAX_CATCH_UP_VIDEOS` caps how many extra videos a day gets while a subject is
 behind the class. Where the class is, is an estimate: it assumes each subject's
 curriculum is spread evenly over the school year's business days (weekdays in

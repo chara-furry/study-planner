@@ -147,7 +147,15 @@ body {
   line-height: 1.2;
 }
 
-/* On a phone: title and clock on one line, the progress bar under them. */
+/* "Catch up", the one button in the bar: smaller than a card's buttons. */
+.topbar-button {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* On a phone: title and clock on one line, Catch up under them on the right,
+   and the progress bar under that. */
 @media (max-width: 640px) {
   .topbar-inner {
     padding: 0.7rem 1rem;
@@ -161,6 +169,11 @@ body {
   }
 
   .topbar-clock {
+    margin-left: auto;
+  }
+
+  .topbar-button {
+    order: 2;            /* after the clock, but still above the progress bar */
     margin-left: auto;
   }
 }

@@ -70,35 +70,64 @@ setInterval(() => {
   }
 }, 1000);
 
-// ----------------------------------------- starting level with the class
+// ----------------------------------------- staying level with the class
 //
 // A browser that starts at the first video of the year is a whole school year
-// behind the class, and would spend weeks catching up. START_CAUGHT_UP
-// (config.js) counts the curriculum videos the class has already covered as
-// watched, so the planner carries on from where school is.
+// behind the class, and would spend weeks catching up. Counting the curriculum
+// videos the class has already covered as watched fixes that, and the planner
+// carries on from where school is.
 //
-// This happens once per browser, remembered under "caughtUp", whether or not
-// anything has been watched here already: a browser that was opened before
-// gets caught up the next time it loads. Videos are only ever added, so
-// watching something early is never undone.
+// It happens by itself once per browser (START_CAUGHT_UP in config.js), and
+// again whenever the Catch up button in the bar at the top is pressed.
 
-async function catchUpWithClassOnce() {
-  if (!START_CAUGHT_UP || isCaughtUpWithClass()) return;
-  rememberCaughtUpWithClass();
+const catchUpButton = document.getElementById("catch-up-btn");
+
+/**
+ * Counts every curriculum video the class has covered by today as watched,
+ * and says how many that added. Videos are only ever added, so anything
+ * watched ahead of the class stays exactly as it was.
+ */
+async function catchUpWithClass() {
+  let added = 0;
 
   for (const catalog of await getAllCatalogs()) {
+    const before = getWatched(catalog.id).size;
     addWatched(catalog.id, videosCoveredByClass(catalog, todayStr()));
+    added += getWatched(catalog.id).size - before;
   }
 
-  // Today's videos may already have been picked from further back. They're
-  // worked out again, unless the day is under way: a list with something
-  // ticked or scored on it is the record of what was actually watched.
+  // Today's videos may have been picked from further back. They're worked out
+  // again, unless the day is under way: a list with something ticked or scored
+  // on it is the record of what was actually watched.
   for (const list of ["today", "prep"]) {
     const plan = getDayPlan(todayStr(), list) || [];
     const untouched = plan.every((entry) => !entry.done && entry.score === null);
     if (untouched) deleteDayPlan(todayStr(), list);
   }
+
+  return added;
 }
+
+// The automatic run, remembered under "caughtUp" so it only happens once,
+// whether or not anything has been watched in this browser already.
+async function catchUpWithClassOnce() {
+  if (!START_CAUGHT_UP || isCaughtUpWithClass()) return;
+  rememberCaughtUpWithClass();
+  await catchUpWithClass();
+}
+
+catchUpButton.onclick = async () => {
+  const question = "Count every video the class has already covered as watched?\n\n"
+    + "Nothing is un-watched, and a day you've already started is kept as it is.";
+  if (!confirm(question)) return;
+
+  const added = await catchUpWithClass();
+  await refreshAll();
+
+  alert(added === 0
+    ? "You were already level with the class."
+    : `${added} video${added === 1 ? "" : "s"} counted as watched. You're level with the class.`);
+};
 
 // ----------------------------------------------------------------- start
 
